@@ -68,5 +68,4 @@ public class MirrorMaster {
     public static int getMaxQueueCapacity(MirrorOptions options) {
         return 10 * options.getMaxThreads();
     }
-
 }

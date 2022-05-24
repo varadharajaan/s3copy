@@ -2,7 +2,12 @@ package org.nimesa.s3copy;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -16,6 +21,10 @@ public class MirrorStats {
     private static final String BANNER = "\n--------------------------------------------------------------------\n";
     public void logStats() {
         log.info(BANNER + "STATS BEGIN\n" + toString() + "STATS END " + BANNER);
+        log.error("sourceBucketList {}", sourceBucketList);
+        log.error("destinationBucketList {}", destinationBucketList);
+        final List<String> arrayList = new ArrayList<>(CollectionUtils.disjunction(sourceBucketList, destinationBucketList));
+        log.error("error files that not copied [{}]", arrayList.toString());
     }
 
     private long start = System.currentTimeMillis();
@@ -34,6 +43,18 @@ public class MirrorStats {
     public static final long HOUR = TimeUnit.HOURS.toMillis(1);
     public static final long MINUTE = TimeUnit.MINUTES.toMillis(1);
     public static final long SECOND = TimeUnit.SECONDS.toMillis(1);
+
+    public final Set<String> destinationBucketList = new HashSet<>();
+
+    public final Set<String> sourceBucketList = new HashSet<>();
+
+    public Set<String>  getSourceBucketList() {
+        return sourceBucketList;
+    }
+
+    public Set<String> getDestinationBucketList() {
+        return destinationBucketList;
+    }
 
     public String toString () {
         final long durationMillis = System.currentTimeMillis() - start;

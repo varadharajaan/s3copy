@@ -8,9 +8,12 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3VersionSummary;
 import com.amazonaws.services.s3.model.VersionListing;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
@@ -38,8 +41,6 @@ public class KeyLister implements Runnable {
         int fetchSize = options.getMaxThreads();
         this.summaries = new ArrayList<>(10 * fetchSize);
 
-        final ListObjectsRequest request = new ListObjectsRequest(bucket, prefix, null, null, fetchSize);
-
         ListVersionsRequest listVersionsRequest = new ListVersionsRequest(bucket, prefix, null, null, null, fetchSize);
 
         versionListing = s3getFirstBatchVersion(client, listVersionsRequest);
@@ -62,7 +63,13 @@ public class KeyLister implements Runnable {
                 while (getSize() < maxQueueCapacity) {
                     if (versionListing.isTruncated()) {
                         versionListing = s3getNextBatchVersion();
-                        if (++counter % 100 == 0) context.getStats().logStats();
+                        if (++counter % 100 == 0) {
+                            context.getStats().logStats();
+                            final Set<String> sourceBucketList = context.getStats().getSourceBucketList();
+                            final Set<String> destinationBucketList = context.getStats().getDestinationBucketList();
+                            final List<String> arrayList = new ArrayList<>(CollectionUtils.disjunction(sourceBucketList, destinationBucketList));
+                            log.error("error files that not copied [{}]", arrayList.toString());
+                        }
                         synchronized (summaries) {
                             final List<S3VersionSummary> objectSummaries = versionListing.getVersionSummaries();
                             summaries.addAll(objectSummaries);

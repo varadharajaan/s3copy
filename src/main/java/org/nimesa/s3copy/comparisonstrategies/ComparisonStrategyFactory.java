@@ -12,6 +12,7 @@ public class ComparisonStrategyFactory {
         } else if (mirrorOptions.isSizeAndLastModified()) {
             return new SizeAndLastModifiedComparisonStrategy();
         } else {
+            System.out.println("found etag comparison strategies");
             return new EtagComparisonStrategy();
         }
     }

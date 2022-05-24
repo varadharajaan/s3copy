@@ -86,8 +86,9 @@ public abstract class KeyMaster implements Runnable {
             final KeyLister lister = new KeyLister(client, context, maxQueueCapacity, getBucket(options), getPrefix(options));
             executorService.submit(lister);
 
+
+
             List<S3VersionSummary> summaries = lister.getNextBatch();
-            summaries.stream().map(it -> it.getVersionId())
 //            List<S3VersionSummary> summaries = summaries_1.stream().sorted(Comparator.comparing(S3VersionSummary::getLastModified)).collect(Collectors.toUnmodifiableList());
             if (verbose) log.info(summaries.size() + " keys found in first batch from source bucket -- processing...");
 

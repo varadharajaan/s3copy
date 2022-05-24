@@ -84,8 +84,17 @@ public class KeyCopyJob extends KeyJob {
                 request.setAccessControlList(objectAcl);
             }
             try {
+                log.error("adding to sourceBucketList list");
+                stats.sourceBucketList.add(keydest);
                 stats.s3copyCount.incrementAndGet();
                 client.copyObject(request);
+                final ObjectMetadata destinationMetadata = client.getObjectMetadata(options.getDestinationBucket(),key);
+                if(destinationMetadata.getETag().equals(sourceMetadata.getETag())) {
+                    log.error("adding to destinationBucketList list");
+                    stats.destinationBucketList.add(keydest);
+                } else {
+                    log.error("error in copying the file, etag mismatch: fileName [{}] versionId[{}]", key,sourceVersionId);
+                }
                 stats.bytesCopied.addAndGet(sourceMetadata.getContentLength());
                 if (verbose) log.info("successfully copied (on try #" + tries + "): " + key + " to: " + keydest);
                 return true;
